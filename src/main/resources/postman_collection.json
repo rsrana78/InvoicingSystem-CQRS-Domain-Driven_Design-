@@ -1,0 +1,283 @@
+{
+	"info": {
+		"_postman_id": "9a9aba0a-fe95-464a-b74e-91b0a5eeb7cc",
+		"name": "Invoicing System API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18183605"
+	},
+	"item": [
+		{
+			"name": "Create Invoice",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customerId\": \"rana\",\n    \"dueDate\": \"2025-06-10\",\n    \"totalAmount\": 50,\n    \"addChargeCommand\": {\n        \"chargeAmount\": 1000,\n        \"description\": \"Development Work\"\n    }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/invoices",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Charge",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"chargeAmount\": 1000,\n    \"description\": \"Development Work\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/1/charges",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"1",
+						"charges"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Finalize",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/1/finalize",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"1",
+						"finalize"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Apply Payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentAmount\": 500,\n    \"description\": \"Partial Payment\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/1/payments",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"1",
+						"payments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "credit-memo",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"creditAmount\": 50,\r\n    \"reason\": \"TEST\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/1/credit-memo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"1",
+						"credit-memo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/1/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"1",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Invoice by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Invoice by Customer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/customer/rana",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"customer",
+						"rana"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get outstanding invoices",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/outstanding",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"outstanding"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Invoice transactions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/transactions/33",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"transactions",
+						"33"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Revenue",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/invoices/revenue",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"invoices",
+						"revenue"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
