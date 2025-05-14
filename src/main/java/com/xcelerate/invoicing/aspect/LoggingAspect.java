@@ -13,7 +13,7 @@ public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
 
-    @Around("execution(* com.xcelerate.invoicing.*.*(..))")
+    @Around("execution(* com.xcelerate.invoicing.service.*.*(..))")
     public Object logMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
