@@ -1,16 +1,17 @@
 package com.xcelerate.invoicing.dto.command.request;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CancelInvoiceCommand implements Serializable {
 
     private Integer invoiceId;
-
-    public Integer getInvoiceId() {
-        return invoiceId;
-    }
-
-    public void setInvoiceId(Integer invoiceId) {
-        this.invoiceId = invoiceId;
-    }
 }

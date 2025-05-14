@@ -1,8 +1,17 @@
 package com.xcelerate.invoicing.dto.query.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RevenueDTO implements Serializable {
 
     private BigDecimal totalInvoice;
@@ -13,29 +22,5 @@ public class RevenueDTO implements Serializable {
         this.totalInvoice = totalInvoice;
         this.totalReceived = totalReceived;
         this.outstanding = totalInvoice.subtract(totalReceived);
-    }
-
-    public BigDecimal getTotalInvoice() {
-        return totalInvoice;
-    }
-
-    public void setTotalInvoice(BigDecimal totalInvoice) {
-        this.totalInvoice = totalInvoice;
-    }
-
-    public BigDecimal getTotalReceived() {
-        return totalReceived;
-    }
-
-    public void setTotalReceived(BigDecimal totalReceived) {
-        this.totalReceived = totalReceived;
-    }
-
-    public BigDecimal getOutstanding() {
-        return outstanding;
-    }
-
-    public void setOutstanding(BigDecimal outstanding) {
-        this.outstanding = outstanding;
     }
 }

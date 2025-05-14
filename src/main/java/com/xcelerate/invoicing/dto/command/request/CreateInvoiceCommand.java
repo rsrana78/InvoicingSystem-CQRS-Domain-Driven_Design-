@@ -2,12 +2,20 @@ package com.xcelerate.invoicing.dto.command.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateInvoiceCommand implements Serializable {
 
     @NotEmpty(message = "Please enter customer ID")
@@ -25,36 +33,7 @@ public class CreateInvoiceCommand implements Serializable {
     private LocalDate dueDate;
 
     private AddChargeCommand addChargeCommand;
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
     public BigDecimal getTotalAmount() {
         return totalAmount!=null?totalAmount.setScale(2, RoundingMode.HALF_UP):totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public AddChargeCommand getAddChargeCommand() {
-        return addChargeCommand;
-    }
-
-    public void setAddChargeCommand(AddChargeCommand addChargeCommand) {
-        this.addChargeCommand = addChargeCommand;
     }
 }

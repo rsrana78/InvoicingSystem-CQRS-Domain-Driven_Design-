@@ -11,12 +11,12 @@ public class CancelInvoiceEvent extends AbstractEventDTO implements Serializable
 
     public CancelInvoiceEvent(Integer invoiceId) {
         this.eventId = String.valueOf(invoiceId);
-        this.eventType = EventTypes.AddChargeCommand.name();
+        this.eventType = EventTypes.CancelInvoiceCommand.name();
         this.eventTimeStamp = LocalDateTime.now();
         this.invoiceId = invoiceId;
     }
 
-    public Integer getInvoiceId() {
+    public Integer getId() {
         return invoiceId;
     }
 }

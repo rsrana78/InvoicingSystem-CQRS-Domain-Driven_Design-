@@ -3,55 +3,33 @@ package com.xcelerate.invoicing.domain;
 import com.xcelerate.invoicing.enums.InvoiceStatus;
 import com.xcelerate.invoicing.enums.TransactionType;
 import com.xcelerate.invoicing.exception.InvalidActionException;
-import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "invoices")
-public class Invoice implements Serializable {
+@Getter
+@Setter
+public class InvoiceDomain {
 
-    private static final Logger logger = LoggerFactory.getLogger(Invoice.class);
+    private static final Logger logger = LoggerFactory.getLogger(InvoiceDomain.class);
 
-    @Id
-    @Column(name = "invoice_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer invoiceId;
-
-    @Column(name = "customer_id")
+    private Integer id;
     private String customerId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "invoice_status")
     private InvoiceStatus status;
-
-    @Column(name = "due_date")
     private LocalDate dueDate;
-
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
-
-    @Column(name = "balance", precision = 10, scale = 2)
     private BigDecimal balance;
+    private final List<TransactionDomain> transactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "invoice",cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<Transaction> transactions = new ArrayList<>();
-
-    public Invoice(){
-
-    }
-
-    public Invoice(String customerId, LocalDate dueDate, BigDecimal totalAmount) {
+    public InvoiceDomain(String customerId, LocalDate dueDate, BigDecimal totalAmount) {
         this.customerId = customerId;
         this.status = InvoiceStatus.DRAFT;
         this.dueDate = dueDate;
@@ -60,45 +38,13 @@ public class Invoice implements Serializable {
         this.balance = totalAmount;
     }
 
-    public Integer getInvoiceId() {
-        return invoiceId;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public InvoiceStatus getStatus() {
-        return status;
-    }
-
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public List<Transaction> getTransactions() {
-        return transactions;
-    }
-
     public void addCharge(BigDecimal amount, String description) {
         logger.info("Adding charge to invoice");
         if (this.status != InvoiceStatus.DRAFT) {
             logger.error("Invoice status is not {}, can not add charge in status {}", InvoiceStatus.DRAFT, this.status);
             throw new InvalidActionException("Charges can only be added to DRAFT invoices");
         }
-        Transaction charge = new Transaction(this, TransactionType.CHARGE, amount, description);
+        TransactionDomain charge = new TransactionDomain(TransactionType.CHARGE, amount, description);
         this.transactions.add(charge);
         this.totalAmount = totalAmount.add(amount);
         this.balance = this.balance.add(amount);
@@ -115,7 +61,7 @@ public class Invoice implements Serializable {
             logger.error("Payment amount can not exceed the remaining balance");
             throw new InvalidActionException("Payment amount can not exceed the remaining balance");
         }
-        Transaction payment = new Transaction(this, TransactionType.PAYMENT, amount, description);
+        TransactionDomain payment = new TransactionDomain(TransactionType.PAYMENT, amount, description);
         this.transactions.add(payment);
         this.balance = this.balance.subtract(amount);
         if (this.balance.compareTo(BigDecimal.ZERO) <= 0) {
@@ -134,7 +80,7 @@ public class Invoice implements Serializable {
             logger.error("Credit memo amount can not exceed the remaining balance");
             throw new InvalidActionException("Credit memo amount can not exceed the remaining balance");
         }
-        Transaction credit = new Transaction(this, TransactionType.CREDIT_MEMO, amount, description);
+        TransactionDomain credit = new TransactionDomain(TransactionType.CREDIT_MEMO, amount, description);
         this.transactions.add(credit);
         this.balance = this.balance.subtract(amount);
         if (this.balance.compareTo(BigDecimal.ZERO) <= 0) {

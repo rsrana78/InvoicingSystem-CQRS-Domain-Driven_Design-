@@ -15,14 +15,14 @@ public class ApplyPaymentEvent extends AbstractEventDTO implements Serializable 
 
     public ApplyPaymentEvent(Integer invoiceId, ApplyPaymentCommand applyPaymentCommand) {
         this.eventId = String.valueOf(invoiceId);
-        this.eventType = EventTypes.AddChargeCommand.name();
+        this.eventType = EventTypes.ApplyPaymentCommand.name();
         this.eventTimeStamp = LocalDateTime.now();
         this.invoiceId = invoiceId;
         this.paymentAmount = applyPaymentCommand.getPaymentAmount();
         this.description = applyPaymentCommand.getDescription();
     }
 
-    public Integer getInvoiceId() {
+    public Integer getId() {
         return invoiceId;
     }
 

@@ -68,7 +68,7 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Printing charges");
         //Execution
@@ -90,15 +90,15 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         ApplyPaymentCommand paymentRequest = new ApplyPaymentCommand();
-        paymentRequest.setInvoiceId(invoice.getInvoiceId());
+        paymentRequest.setInvoiceId(invoice.getId());
         paymentRequest.setPaymentAmount(BigDecimal.valueOf(100));
         paymentRequest.setDescription("Online Payment");
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Printing charges");
         invoiceCommandHandler.addCharge(chargeRequest);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         //Execution
         InvoiceCommandDto response = invoiceCommandHandler.applyPayment(paymentRequest);
         //Verification
@@ -120,18 +120,18 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Printing charges");
         ApplyPaymentCommand paymentRequest = new ApplyPaymentCommand();
-        paymentRequest.setInvoiceId(invoice.getInvoiceId());
+        paymentRequest.setInvoiceId(invoice.getId());
         paymentRequest.setPaymentAmount(BigDecimal.valueOf(500));
         paymentRequest.setDescription("Online Payment");
         invoiceCommandHandler.addCharge(chargeRequest);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         invoiceCommandHandler.applyPayment(paymentRequest);
         ApplyCreditMemoCommand creditMemoRequest = new ApplyCreditMemoCommand();
-        creditMemoRequest.setInvoiceId(invoice.getInvoiceId());
+        creditMemoRequest.setInvoiceId(invoice.getId());
         creditMemoRequest.setCreditAmount(BigDecimal.valueOf(50));
         creditMemoRequest.setReason("Test memo");
         //Execution
@@ -164,7 +164,7 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         //Execution
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
-        InvoiceCommandDto response = invoiceCommandHandler.cancelInvoice(invoice.getInvoiceId());
+        InvoiceCommandDto response = invoiceCommandHandler.cancelInvoice(invoice.getId());
         //Verification
         assertEquals(request.getCustomerId(), response.getCustomerId());
         assertEquals(InvoiceStatus.CANCELLED, response.getStatus());
@@ -179,18 +179,18 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Printing charges");
         invoiceCommandHandler.addCharge(chargeRequest);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         ApplyPaymentCommand paymentRequest = new ApplyPaymentCommand();
-        paymentRequest.setInvoiceId(invoice.getInvoiceId());
+        paymentRequest.setInvoiceId(invoice.getId());
         paymentRequest.setPaymentAmount(BigDecimal.valueOf(550));
         paymentRequest.setDescription("Full Payment");
         invoiceCommandHandler.applyPayment(paymentRequest);
         //Execution
-        Exception exception = assertThrows(InvalidActionException.class, () -> invoiceCommandHandler.cancelInvoice(invoice.getInvoiceId()));
+        Exception exception = assertThrows(InvalidActionException.class, () -> invoiceCommandHandler.cancelInvoice(invoice.getId()));
         //Verification
         assertEquals("Paid invoices cannot be cancelled", exception.getMessage());
     }
@@ -200,9 +200,9 @@ public class InvoiceCommandHandlerTest {
         //Setup
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Test charges");
         //Execution
@@ -217,13 +217,13 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Printing charges");
         invoiceCommandHandler.addCharge(chargeRequest);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         ApplyPaymentCommand paymentRequest = new ApplyPaymentCommand();
-        paymentRequest.setInvoiceId(invoice.getInvoiceId());
+        paymentRequest.setInvoiceId(invoice.getId());
         paymentRequest.setPaymentAmount(BigDecimal.valueOf(600));//Balance=550
         paymentRequest.setDescription("Full Payment");
         //Execution
@@ -238,18 +238,18 @@ public class InvoiceCommandHandlerTest {
         CreateInvoiceCommand request = getRequestPayload();
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Printing charges");
         invoiceCommandHandler.addCharge(chargeRequest);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         ApplyPaymentCommand paymentRequest = new ApplyPaymentCommand();
-        paymentRequest.setInvoiceId(invoice.getInvoiceId());
+        paymentRequest.setInvoiceId(invoice.getId());
         paymentRequest.setPaymentAmount(BigDecimal.valueOf(500));
         paymentRequest.setDescription("Full Payment");
         invoiceCommandHandler.applyPayment(paymentRequest);
         ApplyCreditMemoCommand creditMemoRequest = new ApplyCreditMemoCommand();
-        creditMemoRequest.setInvoiceId(invoice.getInvoiceId());
+        creditMemoRequest.setInvoiceId(invoice.getId());
         creditMemoRequest.setCreditAmount(BigDecimal.valueOf(100));//Balance=50
         creditMemoRequest.setReason("Test memo");
         //Execution

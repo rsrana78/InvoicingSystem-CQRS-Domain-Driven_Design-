@@ -1,6 +1,7 @@
 package com.xcelerate.invoicing.service;
 
-import com.xcelerate.invoicing.domain.AuditLog;
+import com.xcelerate.invoicing.domain.AuditLogDomain;
+import com.xcelerate.invoicing.mapper.ActivityLogMapper;
 import com.xcelerate.invoicing.repository.AuditLogRepository;
 import org.springframework.stereotype.Service;
 
@@ -8,13 +9,16 @@ import org.springframework.stereotype.Service;
 public class ActivityLoggingService {
 
     private final AuditLogRepository auditLogRepository;
+    private final ActivityLogMapper activityLogMapper;
 
-    public ActivityLoggingService(AuditLogRepository auditLogRepository) {
+    public ActivityLoggingService(AuditLogRepository auditLogRepository,
+                                  ActivityLogMapper activityLogMapper) {
         this.auditLogRepository = auditLogRepository;
+        this.activityLogMapper = activityLogMapper;
     }
 
     public void logActivity(Integer invoiceId, String action, String json){
-        AuditLog auditLog = new AuditLog(invoiceId, action, json);
-        auditLogRepository.saveAndFlush(auditLog);
+        AuditLogDomain auditLog = new AuditLogDomain(invoiceId, action, json);
+        auditLogRepository.saveAndFlush(activityLogMapper.domainToEntity(auditLog));
     }
 }

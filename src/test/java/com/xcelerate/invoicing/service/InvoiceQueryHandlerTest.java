@@ -38,7 +38,7 @@ public class InvoiceQueryHandlerTest {
         TransactionCommandDto paymentCommand = command.getTransactions().stream().filter(t->t.getType().equals(TransactionType.PAYMENT)).findFirst().get();
         TransactionCommandDto memoCommand = command.getTransactions().stream().filter(t->t.getType().equals(TransactionType.CREDIT_MEMO)).findFirst().get();
         //Execution
-        InvoiceQueryDto query = invoiceQueryHandler.getInvoiceById(command.getInvoiceId());
+        InvoiceQueryDto query = invoiceQueryHandler.getInvoiceById(command.getId());
         //Verification
         assertEquals(command.getTotalAmount(), query.getTotalAmount());
         assertEquals(command.getCustomerId(), query.getCustomerId());
@@ -46,7 +46,7 @@ public class InvoiceQueryHandlerTest {
         assertEquals(command.getStatus(), query.getStatus());
         assertEquals(command.getDueDate(), query.getDueDate());
         assertEquals(command.getCreatedAt(), query.getCreatedAt());
-        assertEquals(command.getInvoiceId(), query.getInvoiceId());
+        assertEquals(command.getId(), query.getId());
         assertEquals(command.getTransactions().size(), query.getTransactions().size());//Charge, payment, and Memo
 
         TransactionQueryDto chargeQuery = query.getTransactions().stream().filter(t->t.getType().equals(TransactionType.CHARGE)).findFirst().get();
@@ -73,14 +73,14 @@ public class InvoiceQueryHandlerTest {
         //Execution
         List<InvoiceQueryDto> queryList = invoiceQueryHandler.getInvoiceByCustomerId(command.getCustomerId());
         //Verification
-        InvoiceQueryDto query = queryList.stream().filter(i->i.getInvoiceId().equals(command.getInvoiceId())).findFirst().get();
+        InvoiceQueryDto query = queryList.stream().filter(i->i.getId().equals(command.getId())).findFirst().get();
         assertEquals(command.getTotalAmount(), query.getTotalAmount());
         assertEquals(command.getCustomerId(), query.getCustomerId());
         assertEquals(command.getBalance(), query.getBalance());
         assertEquals(command.getStatus(), query.getStatus());
         assertEquals(command.getDueDate(), query.getDueDate());
         assertEquals(command.getCreatedAt(), query.getCreatedAt());
-        assertEquals(command.getInvoiceId(), query.getInvoiceId());
+        assertEquals(command.getId(), query.getId());
         assertEquals(command.getTransactions().size(), query.getTransactions().size());//Charge, payment, and Memo
 
         TransactionQueryDto chargeQuery = query.getTransactions().stream().filter(t->t.getType().equals(TransactionType.CHARGE)).findFirst().get();
@@ -104,14 +104,14 @@ public class InvoiceQueryHandlerTest {
         //Execution
         List<InvoiceQueryDto> queryList = invoiceQueryHandler.getOutstandingInvoices();
         //Verification
-        InvoiceQueryDto query = queryList.stream().filter(i->i.getInvoiceId().equals(command.getInvoiceId())).findFirst().get();
+        InvoiceQueryDto query = queryList.stream().filter(i->i.getId().equals(command.getId())).findFirst().get();
         assertEquals(command.getTotalAmount(), query.getTotalAmount());
         assertEquals(command.getCustomerId(), query.getCustomerId());
         assertEquals(command.getBalance(), query.getBalance());
         assertEquals(command.getStatus(), query.getStatus());
         assertEquals(command.getDueDate(), query.getDueDate());
         assertEquals(command.getCreatedAt(), query.getCreatedAt());
-        assertEquals(command.getInvoiceId(), query.getInvoiceId());
+        assertEquals(command.getId(), query.getId());
         assertEquals(command.getTransactions().size(), query.getTransactions().size());//Charge, payment, and Memo
     }
 
@@ -123,7 +123,7 @@ public class InvoiceQueryHandlerTest {
         TransactionCommandDto paymentCommand = command.getTransactions().stream().filter(t->t.getType().equals(TransactionType.PAYMENT)).findFirst().get();
         TransactionCommandDto memoCommand = command.getTransactions().stream().filter(t->t.getType().equals(TransactionType.CREDIT_MEMO)).findFirst().get();
         //Execution
-        List<TransactionQueryDto> queryList = invoiceQueryHandler.getInvoiceTransactions(command.getInvoiceId());
+        List<TransactionQueryDto> queryList = invoiceQueryHandler.getInvoiceTransactions(command.getId());
         //Verification
         TransactionQueryDto chargeQuery = queryList.stream().filter(t->t.getType().equals(TransactionType.CHARGE)).findFirst().get();
         TransactionQueryDto paymentQuery = queryList.stream().filter(t->t.getType().equals(TransactionType.PAYMENT)).findFirst().get();
@@ -145,22 +145,22 @@ public class InvoiceQueryHandlerTest {
         InvoiceCommandDto invoice = invoiceCommandHandler.createInvoice(request);
         //Charge
         AddChargeCommand chargeRequest = new AddChargeCommand();
-        chargeRequest.setInvoiceId(invoice.getInvoiceId());
+        chargeRequest.setInvoiceId(invoice.getId());
         chargeRequest.setChargeAmount(BigDecimal.valueOf(50));
         chargeRequest.setDescription("Charge Description");
         //Payment
         ApplyPaymentCommand paymentRequest = new ApplyPaymentCommand();
-        paymentRequest.setInvoiceId(invoice.getInvoiceId());
+        paymentRequest.setInvoiceId(invoice.getId());
         paymentRequest.setPaymentAmount(BigDecimal.valueOf(100));
         paymentRequest.setDescription("Payment Description");
         //Credit Memo
         ApplyCreditMemoCommand creditMemoRequest = new ApplyCreditMemoCommand();
-        creditMemoRequest.setInvoiceId(invoice.getInvoiceId());
+        creditMemoRequest.setInvoiceId(invoice.getId());
         creditMemoRequest.setCreditAmount(BigDecimal.valueOf(50));
         creditMemoRequest.setReason("Memo Description");
         //
         invoiceCommandHandler.addCharge(chargeRequest);
-        invoiceCommandHandler.finalizeInvoice(invoice.getInvoiceId());
+        invoiceCommandHandler.finalizeInvoice(invoice.getId());
         invoiceCommandHandler.applyPayment(paymentRequest);
         InvoiceCommandDto response = invoiceCommandHandler.applyCreditMemo(creditMemoRequest);
         return response;

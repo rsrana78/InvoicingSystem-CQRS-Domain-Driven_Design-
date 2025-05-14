@@ -1,22 +1,30 @@
 package com.xcelerate.invoicing.service;
 
-import com.xcelerate.invoicing.domain.Invoice;
+import com.xcelerate.invoicing.domain.InvoiceDomain;
 import com.xcelerate.invoicing.dto.command.request.AddChargeCommand;
 import com.xcelerate.invoicing.dto.command.request.ApplyCreditMemoCommand;
 import com.xcelerate.invoicing.dto.command.request.ApplyPaymentCommand;
 import com.xcelerate.invoicing.dto.command.request.CreateInvoiceCommand;
 import com.xcelerate.invoicing.dto.command.response.InvoiceCommandDto;
 import com.xcelerate.invoicing.dto.events.*;
+import com.xcelerate.invoicing.entity.InvoiceEntity;
+import com.xcelerate.invoicing.entity.TransactionEntity;
 import com.xcelerate.invoicing.enums.TransactionType;
 import com.xcelerate.invoicing.events.publisher.CustomEventPublisher;
-import com.xcelerate.invoicing.mapper.InvoiceCommandMapper;
+import com.xcelerate.invoicing.mapper.InvoiceMapper;
 import com.xcelerate.invoicing.repository.InvoiceRepository;
 import com.xcelerate.invoicing.util.LoggingUtil;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
+@Transactional
 public class InvoiceCommandHandler {
 
     private final static Logger logger = LoggerFactory.getLogger(InvoiceCommandHandler.class);
@@ -24,85 +32,125 @@ public class InvoiceCommandHandler {
 
     private final InvoiceRepository invoiceRepository;
     private final ActivityLoggingService activityLoggingService;
-    private final InvoiceCommandMapper invoiceCommandMapper;
+    private final InvoiceMapper invoiceMapper;
     private final CustomEventPublisher eventPublisher;
 
     public InvoiceCommandHandler(InvoiceRepository invoiceRepository,
                                  ActivityLoggingService activityLoggingService,
-                                 InvoiceCommandMapper invoiceCommandMapper,
+                                 InvoiceMapper invoiceMapper,
                                  CustomEventPublisher eventPublisher) {
         this.invoiceRepository = invoiceRepository;
         this.activityLoggingService = activityLoggingService;
-        this.invoiceCommandMapper = invoiceCommandMapper;
+        this.invoiceMapper = invoiceMapper;
         this.eventPublisher = eventPublisher;
     }
 
     public InvoiceCommandDto createInvoice(CreateInvoiceCommand createInvoiceCommand) {
         logger.info("Inside createInvoice method of service layer.");
-        Invoice invoice = new Invoice(createInvoiceCommand.getCustomerId(), createInvoiceCommand.getDueDate(), createInvoiceCommand.getTotalAmount());
+        InvoiceDomain invoiceDomain = new InvoiceDomain(createInvoiceCommand.getCustomerId(), createInvoiceCommand.getDueDate(), createInvoiceCommand.getTotalAmount());
         if(createInvoiceCommand.getAddChargeCommand() != null){
-            invoice.addCharge(createInvoiceCommand.getAddChargeCommand().getChargeAmount(),
+            invoiceDomain.addCharge(createInvoiceCommand.getAddChargeCommand().getChargeAmount(),
                     createInvoiceCommand.getAddChargeCommand().getDescription());
         }
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        InvoiceEntity invoiceEntity = createInvoice(invoiceDomain);
+        invoiceDomain.setId(invoiceEntity.getId());
         logger.info("Invoice created successfully");
-        activityLoggingService.logActivity(invoice.getInvoiceId(), "CREATED", LoggingUtil.getString(createInvoiceCommand));
-        eventPublisher.publishEvent(new CreateInvoiceEvent(invoice.getInvoiceId(), createInvoiceCommand));
-        return invoiceCommandMapper.toDto(invoice);
+        activityLoggingService.logActivity(invoiceDomain.getId(), "CREATED", LoggingUtil.getString(createInvoiceCommand));
+        eventPublisher.publishEvent(new CreateInvoiceEvent(invoiceDomain.getId(), createInvoiceCommand));
+        return invoiceMapper.domainToCommandDTO(invoiceDomain);
     }
 
     public InvoiceCommandDto addCharge(AddChargeCommand addChargeCommand) {
         logger.info("Inside addCharge method of service layer. Adding charge for invoice {}",addChargeCommand.getInvoiceId());
-        Invoice invoice = invoiceRepository.findById(addChargeCommand.getInvoiceId()).orElseThrow();
-        invoice.addCharge(addChargeCommand.getChargeAmount(), addChargeCommand.getDescription());
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        InvoiceEntity invoiceEntity = invoiceRepository.findById(addChargeCommand.getInvoiceId()).orElseThrow();
+        InvoiceDomain invoiceDomain = invoiceMapper.map(invoiceEntity);
+        invoiceDomain.addCharge(addChargeCommand.getChargeAmount(), addChargeCommand.getDescription());
+        updateInvoice(invoiceEntity, invoiceDomain);
         logger.info("Charges added successfully for invoice {}", addChargeCommand.getInvoiceId());
-        activityLoggingService.logActivity(invoice.getInvoiceId(), TransactionType.CHARGE.name(), LoggingUtil.getString(addChargeCommand));
-        eventPublisher.publishEvent(new AddChargeEvent(invoice.getInvoiceId(), addChargeCommand));
-        return invoiceCommandMapper.toDto(invoice);
+        activityLoggingService.logActivity(invoiceDomain.getId(), TransactionType.CHARGE.name(), LoggingUtil.getString(addChargeCommand));
+        eventPublisher.publishEvent(new AddChargeEvent(invoiceDomain.getId(), addChargeCommand));
+        return invoiceMapper.domainToCommandDTO(invoiceDomain);
     }
 
     public InvoiceCommandDto applyPayment(ApplyPaymentCommand applyPaymentCommand) {
         logger.info("Inside applyPayment method of service layer.");
-        Invoice invoice = invoiceRepository.findById(applyPaymentCommand.getInvoiceId()).orElseThrow();
-        invoice.applyPayment(applyPaymentCommand.getPaymentAmount(), applyPaymentCommand.getDescription());
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        InvoiceEntity invoiceEntity = invoiceRepository.findById(applyPaymentCommand.getInvoiceId()).orElseThrow();
+        InvoiceDomain invoiceDomain = invoiceMapper.map(invoiceEntity);
+        invoiceDomain.applyPayment(applyPaymentCommand.getPaymentAmount(), applyPaymentCommand.getDescription());
+        updateInvoice(invoiceEntity, invoiceDomain);
         logger.info("Payment applied successfully for invoice {}", applyPaymentCommand.getInvoiceId());
-        activityLoggingService.logActivity(invoice.getInvoiceId(), TransactionType.PAYMENT.name(), LoggingUtil.getString(applyPaymentCommand));
-        eventPublisher.publishEvent(new ApplyPaymentEvent(invoice.getInvoiceId(), applyPaymentCommand));
-        return invoiceCommandMapper.toDto(invoice);
+        activityLoggingService.logActivity(invoiceDomain.getId(), TransactionType.PAYMENT.name(), LoggingUtil.getString(applyPaymentCommand));
+        eventPublisher.publishEvent(new ApplyPaymentEvent(invoiceDomain.getId(), applyPaymentCommand));
+        return invoiceMapper.domainToCommandDTO(invoiceDomain);
     }
 
     public InvoiceCommandDto applyCreditMemo(ApplyCreditMemoCommand creditMemoCommand) {
         logger.info("Inside addCreditMemo method  of service layer.");
-        Invoice invoice = invoiceRepository.findById(creditMemoCommand.getInvoiceId()).orElseThrow();
-        invoice.applyCreditMemo(creditMemoCommand.getCreditAmount(), creditMemoCommand.getReason());
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        InvoiceEntity invoiceEntity = invoiceRepository.findById(creditMemoCommand.getInvoiceId()).orElseThrow();
+        InvoiceDomain invoiceDomain = invoiceMapper.map(invoiceEntity);
+        invoiceDomain.applyCreditMemo(creditMemoCommand.getCreditAmount(), creditMemoCommand.getReason());
+        updateInvoice(invoiceEntity, invoiceDomain);
         logger.info("Credit memo applied successfully for invoice {}", creditMemoCommand.getInvoiceId());
-        activityLoggingService.logActivity(invoice.getInvoiceId(), TransactionType.CREDIT_MEMO.name(), LoggingUtil.getString(creditMemoCommand));
-        eventPublisher.publishEvent(new ApplyCreditMemoEvent(invoice.getInvoiceId(), creditMemoCommand));
-        return invoiceCommandMapper.toDto(invoice);
+        activityLoggingService.logActivity(invoiceDomain.getId(), TransactionType.CREDIT_MEMO.name(), LoggingUtil.getString(creditMemoCommand));
+        eventPublisher.publishEvent(new ApplyCreditMemoEvent(invoiceDomain.getId(), creditMemoCommand));
+        return invoiceMapper.domainToCommandDTO(invoiceDomain);
     }
 
     public InvoiceCommandDto finalizeInvoice(Integer invoiceId) {
         logger.info("Inside finalizeInvoice method of service layer");
-        Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow();
-        invoice.finalizeInvoice();
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        InvoiceEntity invoiceEntity = invoiceRepository.findById(invoiceId).orElseThrow();
+        InvoiceDomain invoiceDomain = invoiceMapper.map(invoiceEntity);
+        invoiceDomain.finalizeInvoice();
+        updateInvoice(invoiceEntity, invoiceDomain);
         logger.info("Invoice {} finalized successfully", invoiceId);
-        activityLoggingService.logActivity(invoice.getInvoiceId(), "FINALIZE", String.valueOf(invoiceId));
-        eventPublisher.publishEvent(new FinalizeInvoiceEvent(invoice.getInvoiceId()));
-        return invoiceCommandMapper.toDto(invoice);
+        activityLoggingService.logActivity(invoiceDomain.getId(), "FINALIZE", String.valueOf(invoiceId));
+        eventPublisher.publishEvent(new FinalizeInvoiceEvent(invoiceDomain.getId()));
+        return invoiceMapper.domainToCommandDTO(invoiceDomain);
     }
 
     public InvoiceCommandDto cancelInvoice(Integer invoiceId) {
         logger.info("Inside cancelInvoice method of service layer.");
-        Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow();
-        invoice.cancel();
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        InvoiceEntity invoiceEntity = invoiceRepository.findById(invoiceId).orElseThrow();
+        InvoiceDomain invoiceDomain = invoiceMapper.map(invoiceEntity);
+        invoiceDomain.cancel();
+        invoiceRepository.saveAndFlush(invoiceEntity);
         logger.info("Invoice {} cancelled successfully", invoiceId);
-        activityLoggingService.logActivity(invoice.getInvoiceId(), "CANCEL", String.valueOf(invoiceId));
-        eventPublisher.publishEvent(new FinalizeInvoiceEvent(invoice.getInvoiceId()));
-        return invoiceCommandMapper.toDto(invoice);
+        activityLoggingService.logActivity(invoiceDomain.getId(), "CANCEL", String.valueOf(invoiceId));
+        eventPublisher.publishEvent(new FinalizeInvoiceEvent(invoiceDomain.getId()));
+        return invoiceMapper.domainToCommandDTO(invoiceDomain);
+    }
+
+    private InvoiceEntity createInvoice(InvoiceDomain invoiceDomain){
+        InvoiceEntity invoiceEntity = new InvoiceEntity(invoiceDomain.getCustomerId(), invoiceDomain.getDueDate(), invoiceDomain.getTotalAmount());
+        if(!CollectionUtils.isEmpty(invoiceDomain.getTransactions())){
+            List<TransactionEntity> transactionEntityList = new ArrayList<>();
+            InvoiceEntity finalInvoiceEntity = invoiceEntity;
+            invoiceDomain.getTransactions().forEach(t->{
+                TransactionEntity transactionEntity = new TransactionEntity(finalInvoiceEntity, t.getType(), t.getAmount(), t.getDescription());
+                transactionEntityList.add(transactionEntity);
+            });
+            invoiceEntity.setTransactions(transactionEntityList);
+        }
+        invoiceEntity = invoiceRepository.saveAndFlush(invoiceEntity);
+        return invoiceEntity;
+    }
+
+    private void updateInvoice(InvoiceEntity invoiceEntity, InvoiceDomain invoiceDomain){
+        invoiceEntity.setStatus(invoiceDomain.getStatus());
+        invoiceEntity.setDueDate(invoiceDomain.getDueDate());
+        invoiceEntity.setBalance(invoiceDomain.getBalance());
+        invoiceEntity.setCustomerId(invoiceDomain.getCustomerId());
+        invoiceEntity.setTotalAmount(invoiceDomain.getTotalAmount());
+        invoiceEntity.setCreatedAt(invoiceDomain.getCreatedAt());
+        if(!CollectionUtils.isEmpty(invoiceDomain.getTransactions())){
+            InvoiceEntity finalInvoiceEntity = invoiceEntity;
+            invoiceDomain.getTransactions().forEach(t->{
+                if(t.getId() == null){
+                    TransactionEntity transactionEntity = new TransactionEntity(finalInvoiceEntity, t.getType(), t.getAmount(), t.getDescription());
+                    invoiceEntity.getTransactions().add(transactionEntity);
+                }
+            });
+        }
+        invoiceRepository.saveAndFlush(invoiceEntity);
     }
 }

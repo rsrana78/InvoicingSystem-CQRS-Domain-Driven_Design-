@@ -1,11 +1,19 @@
 package com.xcelerate.invoicing.dto.command.request;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplyPaymentCommand implements Serializable {
 
     private Integer invoiceId;
@@ -18,27 +26,7 @@ public class ApplyPaymentCommand implements Serializable {
     @NotEmpty(message = "Please enter payment description")
     private String description;
 
-    public Integer getInvoiceId() {
-        return invoiceId;
-    }
-
-    public void setInvoiceId(Integer invoiceId) {
-        this.invoiceId = invoiceId;
-    }
-
     public BigDecimal getPaymentAmount() {
         return paymentAmount!=null?paymentAmount.setScale(2, RoundingMode.HALF_UP):paymentAmount;
-    }
-
-    public void setPaymentAmount(BigDecimal paymentAmount) {
-        this.paymentAmount = paymentAmount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }

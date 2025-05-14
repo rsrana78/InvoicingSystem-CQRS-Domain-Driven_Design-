@@ -1,12 +1,12 @@
 package com.xcelerate.invoicing.repository;
 
-import com.xcelerate.invoicing.domain.Transaction;
+import com.xcelerate.invoicing.entity.TransactionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface InvoiceTransactionRepository extends JpaRepository<Transaction, Integer> {
+public interface InvoiceTransactionRepository extends JpaRepository<TransactionEntity, Integer> {
 
-    List<Transaction> findAllByInvoice_invoiceId(Integer invoiceId);
+    List<TransactionEntity> findAllByInvoice_id(Integer invoiceId);
 
 }

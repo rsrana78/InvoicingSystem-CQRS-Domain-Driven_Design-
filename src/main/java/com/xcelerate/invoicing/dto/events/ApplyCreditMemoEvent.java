@@ -15,14 +15,14 @@ public class ApplyCreditMemoEvent extends AbstractEventDTO implements Serializab
 
     public ApplyCreditMemoEvent(Integer invoiceId, ApplyCreditMemoCommand applyCreditMemoCommand) {
         this.eventId = String.valueOf(invoiceId);
-        this.eventType = EventTypes.AddChargeCommand.name();
+        this.eventType = EventTypes.ApplyCreditMemoCommand.name();
         this.eventTimeStamp = LocalDateTime.now();
         this.invoiceId = invoiceId;
         this.creditAmount = applyCreditMemoCommand.getCreditAmount();
         this.reason = applyCreditMemoCommand.getReason();
     }
 
-    public Integer getInvoiceId() {
+    public Integer getId() {
         return invoiceId;
     }
 

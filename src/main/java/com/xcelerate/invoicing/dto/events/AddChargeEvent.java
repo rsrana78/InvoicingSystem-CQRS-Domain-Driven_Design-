@@ -22,7 +22,7 @@ public class AddChargeEvent extends AbstractEventDTO implements Serializable {
         this.description = addChargeCommand.getDescription();
     }
 
-    public Integer getInvoiceId() {
+    public Integer getId() {
         return invoiceId;
     }
 

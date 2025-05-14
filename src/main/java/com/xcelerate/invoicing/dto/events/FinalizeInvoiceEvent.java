@@ -11,12 +11,12 @@ public class FinalizeInvoiceEvent extends AbstractEventDTO implements Serializab
 
     public FinalizeInvoiceEvent(Integer invoiceId) {
         this.eventId = String.valueOf(invoiceId);
-        this.eventType = EventTypes.AddChargeCommand.name();
+        this.eventType = EventTypes.FinalizeInvoiceCommand.name();
         this.eventTimeStamp = LocalDateTime.now();
         this.invoiceId = invoiceId;
     }
 
-    public Integer getInvoiceId() {
+    public Integer getId() {
         return invoiceId;
     }
 }
